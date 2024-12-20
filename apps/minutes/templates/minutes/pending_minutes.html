@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Pending Approvals</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Unique ID</th>
+                <th>Title</th>
+                <th>Created By</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for minute in minutes %}
+                <tr>
+                    <td>{{ minute.unique_id }}</td>
+                    <td>{{ minute.title }}</td>
+                    <td>{{ minute.created_by.get_full_name }}</td>
+                    <td>
+                        <a href="{% url 'approve-minute' minute.id %}" class="btn btn-primary">Review</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

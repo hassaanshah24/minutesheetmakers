@@ -1,0 +1,19 @@
+<!-- make_minutes.html -->
+
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2>Submit Minutes</h2>
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<!-- Buttons for Navigation -->
+<div class="mt-4">
+    <a href="{% url 'track-minutes' %}" class="btn btn-success">Track Submitted Minutes</a>
+    <a href="{% url 'submit-minutes' %}" class="btn btn-secondary">Submit New Minutes</a>
+</div>
+{% endblock %}

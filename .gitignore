@@ -1,0 +1,25 @@
+# Virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs and debug files
+logs/
+*.log
+
+# Django static and media files
+staticfiles/
+media/
+
+# Database files (development database)
+db.sqlite3
+
+# PyCharm specific files
+.idea/
+
+# System-specific files
+.DS_Store
+Thumbs.db

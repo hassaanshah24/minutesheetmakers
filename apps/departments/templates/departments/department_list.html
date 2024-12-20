@@ -1,0 +1,20 @@
+<!-- departments/department_list.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Departments{% endblock %}
+
+{% block content %}
+<h1>Departments</h1>
+<div class="mb-3">
+    <a href="{% url 'department-create' %}" class="btn btn-primary">Add Department</a>
+</div>
+
+<div class="row">
+    {% for department in departments %}
+        {% include 'includes/department_card.html' with department=department %}
+    {% empty %}
+        <p>No departments found. Add a new department using the button above.</p>
+    {% endfor %}
+</div>
+{% endblock %}

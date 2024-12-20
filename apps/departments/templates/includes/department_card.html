@@ -1,0 +1,21 @@
+<!-- includes/department_card.html -->
+
+<div class="col-md-4 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ department.name }}</h5>
+            <p class="card-text">
+                {{ department.description|default:"No description provided" }}
+            </p>
+            <p>
+                <strong>Head of Department:</strong>
+                {{ department.head_of_department.get_full_name|default:"None" }}
+            </p>
+            <a href="{% url 'department-update' department.pk %}" class="btn btn-sm btn-warning">Edit</a>
+            <form action="{% url 'department-delete' department.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this department?');">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>

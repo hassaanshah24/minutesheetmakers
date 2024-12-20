@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Bar</title>
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="navbar-menu">
+            <!-- Dynamic Links for Navigation -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'submit-minutes' %}">Submit Minutes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'track-minutes' %}">Track Minutes</a>
+            </li>
+            {% if user.is_superuser or user.is_staff %}
+            <li><a href="{% url 'pending-minutes' %}">Pending Minutes</a></li>
+            {% endif %}
+            <li class="nav-item">
+                <a href="{% url 'users-home' %}" class="navbar-link">Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'users-home' %}" class="navbar-link">Users</a>
+            <li class="nav-item">
+                <a href="{% url 'department-list' %}" class="navbar-link">Departments</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'track-minutes' %}" class="navbar-link">Minutes</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'reports' %}" class="navbar-link">Analytics</a>
+            </li>
+
+            <!-- User-Specific Links -->
+            {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a href="{% url 'profile' %}" class="navbar-link">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'logout' %}" class="navbar-link">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a href="{% url 'login' %}" class="navbar-link">Login</a>
+                </li>
+            {% endif %}
+
+            <!-- Admin Link for Admins and Superusers -->
+            {% if user.is_staff or user.is_superuser %}
+                <li class="nav-item">
+                    <a href="{% url 'admin:index' %}" class="navbar-link">Admin</a>
+                </li>
+
+            {% endif %}
+        </ul>
+    </nav>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- apps/users/templates/users/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}Users Home{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; margin-top: 30px;">
+    <h1>Welcome to the Users Home Page</h1>
+    <p>This is the starting page for user management.</p>
+    {% if user.is_authenticated %}
+        <p>Logged in as: <strong>{{ user.username }}</strong> ({{ user.role }})</p>
+        <a href="{% url 'profile' %}">Go to Profile</a> |
+        <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+        <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+</div>
+{% endblock %}

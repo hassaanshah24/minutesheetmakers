@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Track Submitted Minutes</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Unique ID</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for minute in minutes %}
+                <tr>
+                    <td>{{ minute.unique_id }}</td>
+                    <td>{{ minute.title }}</td>
+                    <td>{{ minute.status }}</td>
+                    <td>{{ minute.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

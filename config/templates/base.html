@@ -1,0 +1,52 @@
+<!-- templates/includes/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Minute Sheet Management{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'minutes/styles.css' %}">
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{% static 'js/sidebar.js' %}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+
+    <!-- Conditional JS -->
+    {% block extra_head %}
+    {% if request.resolver_match.url_name == 'submit-minutes' %}
+        <link rel="stylesheet" href="{% static 'css/minutes.css' %}">
+        <script src="{% static 'js/minutes.js' %}"></script>
+    {% endif %}
+    {% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    {% include 'includes/navbar.html' %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <!-- Content Goes Here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'includes/footer.html' %}
+
+    <!-- Select2 Initialization -->
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2(); // Activate Select2 dropdowns
+        });
+    </script>
+</body>
+</html>
