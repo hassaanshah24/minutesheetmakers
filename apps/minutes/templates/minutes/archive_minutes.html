@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block title %}Archived Minutes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg p-5">
+        <h1 class="text-center text-primary mb-4">Archived Minutes</h1>
+
+        {% if archived_minutes %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Unique ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Submitted At</th>
+                            <th>Final Comments</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for minute in archived_minutes %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ minute.unique_id }}</td>
+                                <td>{{ minute.title }}</td>
+                                <td>
+                                    {% if minute.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif minute.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ minute.created_by.get_full_name }}</td>
+                                <td>{{ minute.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    <p class="text-muted m-0">{{ minute.comments|default:"No comments available" }}</p>
+                                </td>
+                                <td>
+                                    {% if minute.attachment %}
+                                        <a href="{{ minute.attachment.url }}" target="_blank" class="btn btn-primary btn-sm shadow-sm">
+                                            View Attachment
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No Attachment</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning text-center" role="alert">
+                No archived minutes are available at the moment.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

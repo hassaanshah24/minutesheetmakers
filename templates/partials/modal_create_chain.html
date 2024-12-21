@@ -1,0 +1,81 @@
+<!-- templates/partials/modal_create_chain.html -->
+<div class="modal fade" id="createChainModal" tabindex="-1" aria-labelledby="createChainModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createChainModalLabel">Create Approval Chain</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createChainForm" method="post" action="{% url 'create_approval_chain' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="chainName" class="form-label">Chain Name</label>
+                        <input type="text" name="name" id="chainName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chainDescription" class="form-label">Description</label>
+                        <textarea name="description" id="chainDescription" rows="3" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Approval Steps</label>
+                        <div id="modal-approval-steps">
+                            <div class="approval-step d-flex align-items-center mb-2">
+                                <select name="approvers[]" class="form-control select2" required>
+                                    {% for approver in approvers %}
+                                    <option value="{{ approver.id }}">{{ approver.get_full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-danger btn-sm ms-2 remove-step">Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addStepModal" class="btn btn-secondary btn-sm mt-2">Add Step</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Chain</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        $('#createChainForm').on('submit', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                method: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    alert(response.message);
+                    $('#createChainModal').modal('hide');
+                    location.reload(); // Refresh the page to update chains
+                },
+                error: function (response) {
+                    alert("Error: " + response.responseJSON.errors);
+                }
+            });
+        });
+
+        $('#addStepModal').on('click', function () {
+            $('#modal-approval-steps').append(`
+                <div class="approval-step d-flex align-items-center mb-2">
+                    <select name="approvers[]" class="form-control select2" required>
+                        {% for approver in approvers %}
+                        <option value="{{ approver.id }}">{{ approver.get_full_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-danger btn-sm ms-2 remove-step">Remove</button>
+                </div>
+            `);
+        });
+
+        $(document).on('click', '.remove-step', function () {
+            $(this).closest('.approval-step').remove();
+        });
+    });
+</script>

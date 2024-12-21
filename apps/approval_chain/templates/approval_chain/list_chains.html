@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Approval Chains{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Approval Chains</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Chain Name</th>
+                <th>Description</th>
+                <th>Steps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chain in chains %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ chain.name }}</td>
+                <td>{{ chain.description }}</td>
+                <td>
+                    <ul>
+                        {% for step in chain.approval_steps.all %}
+                        <li>{{ step.step_order }}. {{ step.approver.get_full_name }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No approval chains found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

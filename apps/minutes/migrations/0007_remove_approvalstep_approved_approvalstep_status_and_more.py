@@ -23,6 +23,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='minute',
             name='unique_id',
-            field=models.CharField(default=apps.minutes.models.generate_unique_id, max_length=20, unique=True),
+            field=models.CharField(default="TEMP_ID", max_length=20, unique=True),
         ),
     ]

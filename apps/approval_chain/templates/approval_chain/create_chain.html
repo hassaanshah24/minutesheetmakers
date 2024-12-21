@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Create Approval Chain{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Create Approval Chain</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+    <label for="chainName">Chain Name</label>
+    <input type="text" name="name" id="chainName" class="form-control" required>
+</div>
+
+        <div class="mb-3">
+    <label for="description">Description</label>
+    <textarea name="description" id="description" rows="3" class="form-control"></textarea>
+</div>
+
+        <!-- Approval Steps -->
+        <div id="approval-steps" class="mt-3">
+            <label>Approval Steps</label>
+            <div class="approval-step">
+                <select name="approvers[]" class="form-control select2">
+                    {% for approver in approvers %}
+                    <option value="{{ approver.id }}">{{ approver.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-danger btn-sm remove-step">Remove</button>
+            </div>
+        </div>
+        <button type="button" id="add-step" class="btn btn-secondary mt-2">Add Step</button>
+
+        <button type="submit" class="btn btn-primary mt-3">Save Chain</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const addStepButton = document.getElementById("add-step");
+        const stepsContainer = document.getElementById("approval-steps");
+
+        addStepButton.addEventListener("click", function () {
+            const newStep = document.createElement("div");
+            newStep.classList.add("approval-step", "mt-2");
+            newStep.innerHTML = `
+                <select name="approvers[]" class="form-control select2">
+                    {% for approver in approvers %}
+                    <option value="{{ approver.id }}">{{ approver.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-danger btn-sm remove-step">Remove</button>
+            `;
+            stepsContainer.appendChild(newStep);
+
+            newStep.querySelector(".remove-step").addEventListener("click", function () {
+                stepsContainer.removeChild(newStep);
+            });
+        });
+
+        document.querySelectorAll(".remove-step").forEach(function (button) {
+            button.addEventListener("click", function () {
+                button.parentElement.remove();
+            });
+        });
+    });
+</script>
+{% endblock %}

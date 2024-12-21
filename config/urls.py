@@ -11,6 +11,8 @@ urlpatterns = [
     path('departments/', include('apps.departments.urls')),  # Departments app
     path('minutes/', include('apps.minutes.urls')),  # Minutes app
     path('analytics/', include('apps.analytics.urls')),  # Analytics app
+    path("approval-chain/", include("approval_chain.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

@@ -1,99 +1,119 @@
 {% extends 'base.html' %}
-
+{% load custom_filters %}
 {% block title %}Review Minute{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Review Minute</h1>
-    <div class="mb-4">
-        <p><strong>Title:</strong> {{ minute.title }}</p>
-        <p><strong>Description:</strong> {{ minute.description }}</p>
-        <p><strong>Attachment:</strong>
-            {% if minute.attachment %}
-                <a href="{{ minute.attachment.url }}" target="_blank">View Attachment</a>
-            {% else %}
-                <span class="text-muted">No attachment available</span>
-            {% endif %}
-        </p>
-    </div>
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h1 class="text-center text-primary mb-4">Review Minute</h1>
 
-    <!-- Approval Chain -->
-    <h4>Approval Chain</h4>
-    <ul>
-        {% for step in all_steps %}
-            <li>
-                {{ step.step_order }}. {{ step.approver.get_full_name }} -
-                {% if step.status == 'approved' %}
-                    <span class="text-success">Approved</span>
-                {% elif step.status == 'rejected' %}
-                    <span class="text-danger">Rejected</span>
-                {% else %}
-                    <span class="text-warning">Pending</span>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-
-    <!-- Action Buttons -->
-    <form method="post">
-        {% csrf_token %}
-        <textarea name="comments" class="form-control mb-3" placeholder="Add comments"></textarea>
-
-        <!-- Approve -->
-        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
-
-        <!-- Mark-To -->
-        <div class="mt-3">
-            <label for="mark_to_user">Mark To</label>
-            <select name="mark_to_user" class="form-control">
-                {% for user in approvers %}
-                    <option value="{{ user.id }}">{{ user.get_full_name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="action" value="mark_to" class="btn btn-warning mt-2">Mark To</button>
+        <!-- Minute Details -->
+        <div class="minute-details mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Title:</strong> {{ minute.title }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong>
+                        {% if minute.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif minute.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-12">
+                    <p><strong>Description:</strong> {{ minute.description }}</p>
+                </div>
+                <div class="col-md-12">
+                    <p><strong>Attachment:</strong>
+                        {% if minute.attachment %}
+                            <a href="{{ minute.attachment.url }}" target="_blank" class="text-decoration-none">
+                                View Attachment
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No attachment available</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <!-- Return-To -->
-        <div class="mt-3">
-            <label for="return_to_step">Return To Step</label>
-            <select name="return_to_step" class="form-control">
+        <!-- Approval Chain Visualization -->
+        <h4 class="mb-3">Approval Chain</h4>
+        <div class="approval-chain-container mb-4">
+            <ul class="approval-chain">
                 {% for step in all_steps %}
-                    <option value="{{ step.step_order }}">{{ step.step_order }} - {{ step.approver.get_full_name }}</option>
+                    <li class="approval-step">
+                        <span class="approval-chain-number">{{ step.step_order }}</span>
+                        <span>{{ step.approver.get_full_name }}</span>
+                        {% if step.status == 'approved' %}
+                            <span class="badge bg-success ms-3">Approved</span>
+                        {% elif step.status == 'rejected' %}
+                            <span class="badge bg-danger ms-3">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning ms-3">Pending</span>
+                        {% endif %}
+                    </li>
                 {% endfor %}
-            </select>
-            <button type="submit" name="action" value="return_to" class="btn btn-danger mt-2">Return To</button>
+            </ul>
         </div>
-    </form>
+
+        <!-- Action Form -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mb-4">
+                <label for="comments" class="form-label">Comments</label>
+                <textarea name="comments" id="comments" class="form-control shadow-sm" rows="4" placeholder="Add comments for your action"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="submit" name="action" value="approve" class="btn btn-success btn-block shadow-sm">
+                        Approve
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" name="action" value="reject" class="btn btn-danger btn-block shadow-sm">
+                        Reject
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" name="action" value="mark_to" class="btn btn-warning btn-block shadow-sm">
+                        Mark To
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mark-To Section -->
+            <div class="mt-4">
+                <label for="mark_to_user" class="form-label">Mark To</label>
+                <select name="mark_to_user" id="mark_to_user" class="form-select shadow-sm">
+                    <option value="" selected>Select a user</option>
+                    {% for user in approvers %}
+                        <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Return-To Section -->
+            <div class="mt-4">
+                <label for="return_to_step" class="form-label">Return To Step</label>
+                <select name="return_to_step" id="return_to_step" class="form-select shadow-sm">
+                    <option value="" selected>Select a step</option>
+                    {% for step in all_steps %}
+                        <option value="{{ step.step_order }}">
+                            Step {{ step.step_order }} - {{ step.approver.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="action" value="return_to" class="btn btn-secondary mt-2 shadow-sm">
+                    Return To
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
-
-<form method="post">
-    {% csrf_token %}
-    <textarea name="comments" class="form-control mb-3" placeholder="Add comments"></textarea>
-
-    <!-- Approve -->
-    <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
-
-    <!-- Mark-To -->
-    <div class="mt-3">
-        <label for="mark_to_user">Mark To:</label>
-        <select name="mark_to_user" class="form-control">
-            {% for user in approvers %}
-            <option value="{{ user.id }}">{{ user.get_full_name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" name="action" value="mark_to" class="btn btn-warning mt-2">Mark To</button>
-    </div>
-
-    <!-- Return-To -->
-    <div class="mt-3">
-        <label for="return_to_step">Return To Step:</label>
-        <select name="return_to_step" class="form-control">
-            {% for step in all_steps %}
-            <option value="{{ step.step_order }}">{{ step.step_order }} - {{ step.approver.get_full_name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" name="action" value="return_to" class="btn btn-danger mt-2">Return To</button>
-    </div>
-</form>
-

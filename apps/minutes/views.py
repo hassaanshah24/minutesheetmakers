@@ -1,11 +1,17 @@
-from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.timezone import now
 from .models import Minute, ApprovalStep
 from .forms import MinuteForm
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.db.models import Q
+from apps.users.models import CustomUser
+from django.contrib.auth import get_user_model
+from approval_chain.models import ApprovalChain
+
+User = get_user_model()
 
 # Dynamically fetch the custom user model
 User = get_user_model()
@@ -13,41 +19,30 @@ User = get_user_model()
 
 @login_required
 def submit_minutes(request):
-    """
-    Handles the submission of minutes and creates the approval chain.
-    """
-    approvers = User.objects.filter(is_staff=True)  # Fetch staff users for approvers
-    if request.method == 'POST':
+    if request.method == "POST":
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
             minute = form.save(commit=False)
             minute.created_by = request.user
             minute.save()
 
-            # Create approval steps
-            approvers_ids = request.POST.getlist('approvers')
-            for idx, approver_id in enumerate(approvers_ids, start=1):
-                approver = User.objects.filter(id=approver_id).first()
-                if approver:
+            # Use the selected approval chain to create ApprovalSteps
+            approval_chain = form.cleaned_data.get("approval_chain")
+            if approval_chain:
+                for step in approval_chain.approval_steps.all():
                     ApprovalStep.objects.create(
                         minute=minute,
-                        approver=approver,
-                        step_order=idx,
-                        status='pending' if idx == 1 else 'pending'
+                        approver=step.approver,
+                        step_order=step.step_order,
+                        status="pending" if step.step_order == 1 else "pending",
                     )
 
-            messages.success(request, f"Minutes submitted successfully. Unique ID: {minute.unique_id}")
-            return redirect('track-minutes')
-        else:
-            messages.error(request, "Please fix the errors in the form.")
+            messages.success(request, "Minute submitted successfully!")
+            return redirect("track-minutes")
     else:
         form = MinuteForm()
 
-    return render(request, 'minutes/submit_minutes.html', {
-        'form': form,
-        'approvers': approvers,
-        'title': 'Submit Minutes',
-    })
+    return render(request, "minutes/submit_minutes.html", {"form": form, "title": "Submit New Minute"})
 
 
 @login_required
@@ -102,14 +97,29 @@ def approve_minute(request, minute_id):
             current_step.approved_at = now()
             current_step.save()
 
-            next_step = minute.approval_steps.filter(step_order=minute.current_step + 1).first()
+            # Move to the next step or mark the minute as approved
+            next_step = minute.approval_steps.filter(step_order=current_step.step_order + 1).first()
             if next_step:
+                next_step.status = 'pending'
+                next_step.save()
                 minute.current_step += 1
             else:
                 minute.is_approved = True
             minute.comments = comments
             minute.save()
             messages.success(request, "Minute approved successfully.")
+
+        elif action == 'reject':
+            current_step.status = 'rejected'
+            current_step.approved_at = now()
+            current_step.save()
+            minute.is_approved = False
+            minute.comments = comments
+            minute.save()
+
+            # Notify all members in the chain
+            # Placeholder for notification logic
+            messages.error(request, "Minute has been rejected and archived.")
 
         elif action == 'mark_to':
             new_approver_id = request.POST.get('mark_to_user')
@@ -166,13 +176,29 @@ def approve_minute(request, minute_id):
     })
 
 
-@login_required
+
 def search_users(request):
     """
-    Fetches staff users for the approval dropdown dynamically.
+    API endpoint to fetch approvers dynamically.
     """
-    query = request.GET.get('q', '')  # Get the query parameter
-    users = User.objects.filter(is_staff=True, username__icontains=query)[:10]  # Filter staff users
+    query = request.GET.get('q', '')
+    role_filter = request.GET.get('role', '')
 
-    results = [{'id': user.id, 'text': user.get_full_name()} for user in users]
-    return JsonResponse({'results': results})
+    try:
+        users = User.objects.filter(is_active=True)
+        if query:
+            users = users.filter(
+                Q(username__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
+            )
+        if role_filter:
+            users = users.filter(role=role_filter)  # Adjust 'role' field as per your User model
+
+        results = [
+            {'id': user.id, 'text': f"{user.first_name} {user.last_name} ({user.username})"}
+            for user in users
+        ]
+        return JsonResponse({'results': results})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

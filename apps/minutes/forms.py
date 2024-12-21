@@ -1,21 +1,30 @@
 from django import forms
 from .models import Minute, ApprovalStep
 from django.contrib.auth import get_user_model
-
+from approval_chain.models import ApprovalChain
 User = get_user_model()
 
 
 class MinuteForm(forms.ModelForm):
-    approvers = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(is_staff=True),
+    approval_chain = forms.ModelChoiceField(
+        queryset=ApprovalChain.objects.all(),
         required=True,
-        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'}),  # Select2 for a searchable dropdown
+        widget=forms.Select(attrs={"class": "form-control"}),
+        label="Approval Chain"
+    )
+    """
+    Form for creating or editing a minute, including the approval chain.
+    """
+    approvers = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),  # Include all users as potential approvers
+        required=True,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'}),
         label="Approval Chain (Select Approvers)"
     )
 
     class Meta:
         model = Minute
-        fields = ['title', 'description', 'attachment']  # Fields in the Minute model
+        fields = ['title', 'description', 'attachment', 'approval_chain']  # Fixed syntax
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
@@ -50,6 +59,7 @@ class MinuteForm(forms.ModelForm):
                     ApprovalStep.objects.create(
                         minute=minute,
                         approver=approver,
-                        step_order=idx
+                        step_order=idx,
+                        status='pending' if idx == 1 else 'pending'
                     )
         return minute
